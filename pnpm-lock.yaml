@@ -1,0 +1,5 @@
+dependencies:
+  '@grunmouse/console-read': 'link:../console-read'
+lockfileVersion: 5.1
+specifiers:
+  '@grunmouse/console-read': 'link:..\console-read'

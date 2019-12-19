@@ -1,0 +1,20 @@
+{
+  "name": "@grunmouse/console-alter-input",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "format": "cjs",
+  "private": true,
+  "dev": true,
+  "engine": {
+    "node": ">=9.5.0"
+  },
+  "author": {
+    "name": "Rakov",
+    "email": "grunmouse@mail.ru"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@grunmouse/console-read": "link:..\\console-read"
+  }
+}
