@@ -14,11 +14,14 @@ function *convertConfig(config){
  * @param {String} [0] - Метка в списке альтернатив
  * @param {String} [1] - Акслератор - принятая аббревиатура, которую можно ввести
  * @param {String} [2] - Приглашение ко вводу, показывающаяся перед списком альтернатив
- * @param {function} [3] - Функция, которая будет вызвана 
+ * @param {Function|any} [3] - Функция, которая будет вызвана, или значение, которое будет возвращено 
  * @params [label, accelerator, func]
  * @param {String} [0] - Метка в списке альтернатив, и она же - приглашение
  * @param {String} [1] - Акслератор - принятая аббревиатура, которую можно ввести
- * @param {function} [2] - Функция, которая будет вызвана 
+ * @param {Function|any} [2] - Функция, которая будет вызвана, или значение, которое будет возвращено 
+ * @params [label, accelerator]
+ * @param {String} [0] - Метка в списке альтернатив, и она же - приглашение
+ * @param {String} [1] - Акслератор - принятая аббревиатура, которую можно ввести, и он же - возвращаемое значение
  */
 
 /**
@@ -39,7 +42,14 @@ function alternativeInput(config){
 	let mapping = new Map(convertConfig(items));
 	//console.log(mapping.keys());
 	return {
-		input:async function(key){
+		/**
+		 * Включает состояние, соответствующее переданному ключу (метка или акселератор)
+		 * Если состояние не содержит функции обработки, оно считается завершающим, возвращается значение func
+		 * Выводит приглашение ко вводу и ждёт ввода строки,
+		 * Если введён новый ключ - меняет состояние и перезапускается.
+		 * Если введено значение - вызывает с ним функцию обработки и возвращает её возврат
+		 */
+		input:async function(key, handler){
 			while(key){
 				//console.log('key ' +key);
 				this.last = key;
@@ -50,28 +60,35 @@ function alternativeInput(config){
 				if(!(item.func instanceof Function)){
 					return item.func;
 				}
+				
 				let prompt = item.prompt +'(' + items.filter((a)=>(a!==item)).map((a)=>(a.label)).join('|') + ')>';
 				
 				let entry = await input(prompt);
-				//console.log('entry ' +entry);
 				
 				if(mapping.has(entry.toLowerCase())){
 					//Если введён ключ - сменить режим и повторить
 					key = entry;
 				}
 				else{
-					//Если введено значение, пробросить её в функцию и вернуть то, что вернёт она
-					if(item.func instanceof Function){
-						try{
-							return await item.func(entry);
-						}
-						catch(e){
-							console.log('Error in function');
-							console.log(e.stack);
-						}
+					try{
+						return await item.func(entry);
 					}
-					else{
-						return item.func;
+					catch(e){
+						if(item.handler){
+							item.handler(e);
+						}
+						else if(handler){
+							if(handler typeof Function){
+								handler(e);
+							}
+							else{
+								console.log('Error in function');
+								console.log(e.stack);
+							}
+						}
+						else{
+							throw e;
+						}
 					}
 				}
 			}
